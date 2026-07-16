@@ -22,6 +22,16 @@ npx vitest run lib/appointments.test.ts   # a single test file
 
 Tests use **Vitest** (node env; `@/` alias configured in `vitest.config.ts`). Coverage is the pure logic in `lib/` — status/filter/sort. Pass an explicit `now` to the status helpers in tests so results don't depend on the wall clock. UI/components are not tested yet.
 
+## Git workflow
+
+- **One feature, one branch.** Never commit a new feature directly to `main`.
+  Before starting a feature, create a branch off up-to-date `main`:
+  `git switch main && git pull && git switch -c <branch>`.
+- Branch names are kebab-case and prefixed by intent: `feat/…`, `fix/…`,
+  `chore/…`, `refactor/…` (e.g. `feat/prisma-data-layer`).
+- Merge back into `main` via pull request, not by pushing to `main` directly.
+- Commit/push only when asked (see the harness git rules).
+
 ## Stack & conventions
 
 - **Next.js 16** (App Router) + **React 19** + **TypeScript** (strict).

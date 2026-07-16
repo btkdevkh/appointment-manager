@@ -63,11 +63,19 @@ out, and the manager renders signed in with the avatar and sign-out control.
 
 No major piece outstanding. Worth considering:
 
-- **Deploying to Vercel**: set `AUTH_SECRET` (a fresh one), `AUTH_GOOGLE_ID`,
-  `AUTH_GOOGLE_SECRET`, `DATABASE_URL` and `DIRECT_URL` in the project's env
-  vars; add `https://<domain>/api/auth/callback/google` to the Google client's
-  redirect URIs; publish the OAuth consent screen (it's in Testing mode, so only
-  listed test users can sign in); and run migrations at deploy — `next build`
-  does not, so the build command needs `prisma migrate deploy && next build`.
+- **Deploying to Vercel.** The build side is done: `vercel.json` points Vercel
+  at `npm run build:vercel` (`vitest run && prisma migrate deploy && next
+  build`). Tests run before the migration, so a red build never touches the
+  production database; migrations stay out of plain `npm run build` so a local
+  build can't migrate the dev DB. Still to do, all outside the repo:
+  - Env vars in the Vercel project: `DATABASE_URL`, `DIRECT_URL` (migrations
+    need the unpooled one), `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, and a
+    **fresh** `AUTH_SECRET` — not the local one.
+  - `https://<domain>/api/auth/callback/google` on the Google OAuth client.
+  - Publish the OAuth consent screen; it's in Testing mode, so only listed test
+    users can sign in.
+  - Unverified: no deploy has run. `build:vercel` was only exercised locally,
+    where `migrate deploy` was a no-op against an already-migrated database.
 - Components/UI have no tests, and no component-testing setup exists yet.
+  The pickers in `components/ui/` have never been click-tested in a browser.
 - `next-auth@5` is a beta pin; revisit when it goes stable.

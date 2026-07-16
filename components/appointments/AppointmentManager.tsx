@@ -8,12 +8,23 @@ import type {
   SortOrder,
 } from "@/types/appointment";
 import {countByStatus, filterAndSort} from "@/lib/appointments";
+import {
+  createAppointment,
+  updateAppointment,
+  deleteAppointment,
+  toggleComplete as toggleCompleteAction,
+} from "@/lib/actions";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import AppointmentForm from "./AppointmentForm";
 import AppointmentList from "./AppointmentList";
 
-export default function AppointmentManager() {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+type Props = {
+  initialAppointments: Appointment[];
+};
+
+export default function AppointmentManager({initialAppointments}: Props) {
+  const [appointments, setAppointments] =
+    useState<Appointment[]>(initialAppointments);
   const [tab, setTab] = useState<FilterTab>("all");
   const [order, setOrder] = useState<SortOrder>("asc");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -42,40 +53,85 @@ export default function AppointmentManager() {
 
   type FormData = {title: string; startsAt: string; notes?: string};
 
-  function submitAppointment(data: FormData) {
+  // Each mutation updates local state optimistically for a snappy UI, persists
+  // via a server action, then reconciles with the row the server returns (or
+  // reverts on failure). Local state stays the source of truth for the list.
+  async function submitAppointment(data: FormData) {
     if (editingId) {
+      const id = editingId;
+      const original = appointments.find((a) => a.id === id);
       setAppointments((prev) =>
-        prev.map((a) => (a.id === editingId ? {...a, ...data} : a))
+        prev.map((a) => (a.id === id ? {...a, ...data} : a))
       );
       setEditingId(null);
+      try {
+        const saved = await updateAppointment(id, data);
+        setAppointments((prev) => prev.map((a) => (a.id === id ? saved : a)));
+      } catch (error) {
+        console.error(error);
+        if (original) {
+          setAppointments((prev) => prev.map((a) => (a.id === id ? original : a)));
+        }
+        alert("Échec de l'enregistrement du rendez-vous.");
+      }
     } else {
+      const tempId = crypto.randomUUID();
       setAppointments((prev) => [
         ...prev,
         {
-          id: crypto.randomUUID(),
+          id: tempId,
           completed: false,
           createdAt: new Date().toISOString(),
           ...data,
         },
       ]);
+      try {
+        const saved = await createAppointment(data);
+        setAppointments((prev) =>
+          prev.map((a) => (a.id === tempId ? saved : a))
+        );
+      } catch (error) {
+        console.error(error);
+        setAppointments((prev) => prev.filter((a) => a.id !== tempId));
+        alert("Échec de la création du rendez-vous.");
+      }
     }
   }
 
-  function toggleComplete(id: string) {
+  async function toggleComplete(id: string) {
+    const original = appointments.find((a) => a.id === id);
+    if (!original) return;
     setAppointments((prev) =>
       prev.map((a) => (a.id === id ? {...a, completed: !a.completed} : a))
     );
+    try {
+      const saved = await toggleCompleteAction(id);
+      setAppointments((prev) => prev.map((a) => (a.id === id ? saved : a)));
+    } catch (error) {
+      console.error(error);
+      setAppointments((prev) => prev.map((a) => (a.id === id ? original : a)));
+      alert("Échec de la mise à jour du rendez-vous.");
+    }
   }
 
   const pendingDelete = pendingDeleteId
     ? appointments.find((a) => a.id === pendingDeleteId) ?? null
     : null;
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!pendingDeleteId) return;
-    if (pendingDeleteId === editingId) setEditingId(null);
-    setAppointments((prev) => prev.filter((a) => a.id !== pendingDeleteId));
+    const id = pendingDeleteId;
+    const original = appointments.find((a) => a.id === id);
+    if (id === editingId) setEditingId(null);
+    setAppointments((prev) => prev.filter((a) => a.id !== id));
     setPendingDeleteId(null);
+    try {
+      await deleteAppointment(id);
+    } catch (error) {
+      console.error(error);
+      if (original) setAppointments((prev) => [...prev, original]);
+      alert("Échec de la suppression du rendez-vous.");
+    }
   }
 
   const tabs: {value: FilterTab; label: string; count: number}[] = [

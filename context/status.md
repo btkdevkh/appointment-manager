@@ -14,24 +14,31 @@ Full appointment **CRUD UI**, working against **in-memory React state**
 - Custom French **date & time pickers** (`components/ui/`).
 - Pure status/filter/sort logic unit-tested (`lib/appointments.test.ts`).
 
-## Known gap
+**Persistence — Prisma + Neon (Postgres)** — appointments now survive refreshes:
 
-**Nothing persists — a page refresh clears all appointments.** Everything is
-local component state.
+- `prisma/schema.prisma`: `User` + `Appointment` (user-scoped, `@@index([userId, startsAt])`).
+  Migration `init` applied to Neon.
+- Prisma 7 is Rust-free and needs a driver adapter — `lib/prisma.ts` is a
+  `globalThis`-cached singleton using `@prisma/adapter-neon`. Client is generated
+  into `lib/generated/prisma` (gitignored). DB URLs live in `.env`
+  (`DATABASE_URL` pooled for runtime, `DIRECT_URL` direct for migrations, wired
+  through `prisma.config.ts`).
+- `lib/actions.ts`: server actions (list / create / update / toggle / delete),
+  each `revalidatePath("/")`. `getCurrentUserId()` returns a fixed
+  `PLACEHOLDER_USER_ID` for now (see next step).
+- `app/page.tsx` is a server component that loads initial data; the manager
+  seeds from it and calls the actions with optimistic updates (revert on error).
+- Verified end-to-end: live read via the app + a create/toggle/read/delete
+  round-trip through the pooled adapter.
 
-## Next step: Prisma + Neon (persistence)
+## Next step: Authentication
 
-1. `prisma/schema.prisma` with the `Appointment` model (see Data model in
-   `CLAUDE.md`), Postgres datasource.
-2. `lib/prisma.ts` client singleton; `lib/actions.ts` server actions
-   (create / update / delete / toggle / list).
-3. Swap the manager's `useState` handlers for those server actions.
-4. Stub `userId` with a fixed placeholder until auth fills it in for real.
+**NextAuth with Google login** (final major piece). Its main job is to scope
+appointments to a real user, replacing the stubbed `PLACEHOLDER_USER_ID`:
 
-**Requires a Neon database:** create a project at neon.tech, put its connection
-string in `.env` as `DATABASE_URL` (add `.env` to `.gitignore`).
-
-## After that
-
-**Authentication** — NextAuth with Google login (final step). Its main job is to
-scope appointments to a real user, replacing the stubbed `userId`.
+1. Add NextAuth (Google provider) + a Prisma adapter; extend the `User` model /
+   add the auth tables NextAuth needs (Account/Session) via a migration.
+2. Replace `getCurrentUserId()` in `lib/actions.ts` with the session user's id;
+   protect the actions (reject when signed out).
+3. Add sign-in / sign-out UI; gate the manager behind auth.
+4. Drop the placeholder user once real users exist.

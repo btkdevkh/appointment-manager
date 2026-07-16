@@ -1,5 +1,7 @@
 # Rendez-vous
 
+**[appointment-manager-gilt.vercel.app](https://appointment-manager-gilt.vercel.app)**
+
 A small appointment manager: sign in with Google, add your appointments, tick them off. The interface is in French; the code and docs are in English.
 
 Built with the Next.js App Router, Prisma against Neon Postgres, and Auth.js for Google sign-in. Appointments are scoped to the signed-in user — you only ever see your own.

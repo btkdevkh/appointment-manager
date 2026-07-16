@@ -59,23 +59,31 @@ Verified end-to-end against real Google credentials: signing in wrote the
 expected `User` / `Account` / `Session` rows, the landing page renders signed
 out, and the manager renders signed in with the avatar and sign-out control.
 
+**Deployed — [appointment-manager-gilt.vercel.app](https://appointment-manager-gilt.vercel.app)**
+
+- `vercel.json` points Vercel at `npm run build:vercel` (`vitest run && prisma
+  migrate deploy && next build`), so migrations apply on deploy — `next build`
+  alone doesn't. Tests run first, so a red build never touches the production
+  database; migrations stay out of plain `npm run build` so a local build can't
+  migrate the dev branch.
+- **Two Neon branches.** `production` is Vercel's; `development` is local and is
+  what `.env` points at. The production URL exists only in Vercel's dashboard —
+  never in a file on this machine — so no local command (notably `prisma migrate
+  dev`, which can reset on drift) can reach it. Vercel's Preview scope points at
+  `development`, so a PR's preview can't migrate production.
+- `DIRECT_URL` must be the **unpooled** host (no `-pooler`): migrations need a
+  real session, not PgBouncer. Neon's console hands you the pooled string for
+  both by default.
+- Verified from outside after deploy: landing page 200, `/api/auth/providers`
+  reports the production callback (so Auth.js infers `trustHost` on Vercel —
+  don't set `AUTH_TRUST_HOST` there), `/api/auth/session` returns `200 null`.
+
 ## Next step
 
 No major piece outstanding. Worth considering:
 
-- **Deploying to Vercel.** The build side is done: `vercel.json` points Vercel
-  at `npm run build:vercel` (`vitest run && prisma migrate deploy && next
-  build`). Tests run before the migration, so a red build never touches the
-  production database; migrations stay out of plain `npm run build` so a local
-  build can't migrate the dev DB. Still to do, all outside the repo:
-  - Env vars in the Vercel project: `DATABASE_URL`, `DIRECT_URL` (migrations
-    need the unpooled one), `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, and a
-    **fresh** `AUTH_SECRET` — not the local one.
-  - `https://<domain>/api/auth/callback/google` on the Google OAuth client.
-  - Publish the OAuth consent screen; it's in Testing mode, so only listed test
-    users can sign in.
-  - Unverified: no deploy has run. `build:vercel` was only exercised locally,
-    where `migrate deploy` was a no-op against an already-migrated database.
 - Components/UI have no tests, and no component-testing setup exists yet.
   The pickers in `components/ui/` have never been click-tested in a browser.
+- Preview deployments can't sign in — each gets a unique URL that isn't
+  registered with Google. Fixable with `AUTH_REDIRECT_PROXY_URL` if it matters.
 - `next-auth@5` is a beta pin; revisit when it goes stable.

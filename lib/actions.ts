@@ -1,19 +1,24 @@
 "use server";
 
+import { cache } from "react";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import type { Appointment } from "@/types/appointment";
 
-// --- User scoping (stubbed until auth) -------------------------------------
-// Every appointment is scoped to a user. Until NextAuth is wired in, all
-// appointments belong to one fixed placeholder user. When auth lands, this
-// becomes the signed-in user's id (from the session), and mutations below
-// should be scoped to it so users can't touch each other's data.
-const PLACEHOLDER_USER_ID = "placeholder-user";
-
-function getCurrentUserId(): string {
-  return PLACEHOLDER_USER_ID;
-}
+// --- User scoping -----------------------------------------------------------
+// Every query below scopes on this id, so it is the only thing standing between
+// one user's appointments and another's. Server actions are public HTTP
+// endpoints — a hidden button in the UI proves nothing — so each action asks
+// for the session itself and throws when there isn't one.
+//
+// `cache` memoizes it for one render pass: sessions live in the database, so an
+// uncached call is a round trip, and a page render asks more than once.
+const requireUserId = cache(async (): Promise<string> => {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Non authentifié");
+  return session.user.id;
+});
 
 // --- Serialization ----------------------------------------------------------
 // Prisma returns `Date` objects; the app's `Appointment` type (and React
@@ -49,7 +54,7 @@ export type AppointmentInput = {
 /** All of the current user's appointments, soonest first. */
 export async function listAppointments(): Promise<Appointment[]> {
   const rows = await prisma.appointment.findMany({
-    where: { userId: getCurrentUserId() },
+    where: { userId: await requireUserId() },
     orderBy: { startsAt: "asc" },
   });
   return rows.map(serialize);
@@ -58,24 +63,14 @@ export async function listAppointments(): Promise<Appointment[]> {
 export async function createAppointment(
   input: AppointmentInput
 ): Promise<Appointment> {
-  const userId = getCurrentUserId();
+  const userId = await requireUserId();
   const row = await prisma.appointment.create({
     data: {
       title: input.title.trim(),
       startsAt: new Date(input.startsAt),
       notes: input.notes?.trim() || null,
-      // Create the placeholder user on first write so the FK is satisfied.
-      // Auth will replace this with a real, already-existing user.
-      user: {
-        connectOrCreate: {
-          where: { id: userId },
-          create: {
-            id: userId,
-            email: "placeholder@rendez-vous.local",
-            name: "Placeholder",
-          },
-        },
-      },
+      // The adapter created this user row at sign-in, so it always exists.
+      userId,
     },
   });
   revalidatePath("/");
@@ -88,7 +83,7 @@ export async function updateAppointment(
 ): Promise<Appointment> {
   // Scope by userId so a user can only edit their own appointments.
   const { count } = await prisma.appointment.updateMany({
-    where: { id, userId: getCurrentUserId() },
+    where: { id, userId: await requireUserId() },
     data: {
       title: input.title.trim(),
       startsAt: new Date(input.startsAt),
@@ -103,7 +98,7 @@ export async function updateAppointment(
 
 export async function toggleComplete(id: string): Promise<Appointment> {
   const current = await prisma.appointment.findFirst({
-    where: { id, userId: getCurrentUserId() },
+    where: { id, userId: await requireUserId() },
     select: { completed: true },
   });
   if (!current) throw new Error("Rendez-vous introuvable");
@@ -117,7 +112,7 @@ export async function toggleComplete(id: string): Promise<Appointment> {
 
 export async function deleteAppointment(id: string): Promise<void> {
   await prisma.appointment.deleteMany({
-    where: { id, userId: getCurrentUserId() },
+    where: { id, userId: await requireUserId() },
   });
   revalidatePath("/");
 }

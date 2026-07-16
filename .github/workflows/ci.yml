@@ -39,7 +39,13 @@ jobs:
 
       - run: npx tsc --noEmit
 
+      # NODE_ENV=production mirrors how Vercel invokes the tests inside
+      # `build:vercel`. Without it, CI ran them in development and went green
+      # while the deploy failed on React's production bundle omitting `act`.
+      # CI is only a gate if it fails where the deploy would.
       - run: npx vitest run
+        env:
+          NODE_ENV: production
 
       # `build:only` — `build` would re-run the tests that just ran.
       - run: npm run build:only

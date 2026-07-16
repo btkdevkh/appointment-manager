@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "vitest run && next build",
     "build:only": "next build",
+    "build:vercel": "vitest run && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",

@@ -14,6 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev     # start dev server (http://localhost:3000)
 npm run build   # tests, then the production build — fails if any test fails
 npm run build:only          # skip the tests (CI, which runs them separately)
+npm run build:vercel        # what Vercel runs — adds `prisma migrate deploy`. Don't run locally: it migrates whatever DATABASE_URL points at.
 npm run start   # serve the production build
 npm run lint    # ESLint
 npm test        # run Vitest once

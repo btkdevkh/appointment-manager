@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
+/* Light-only warm theme, matching the UI prototype. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f5f3;
+  --foreground: #1a1a1a;
 }
 
 @theme inline {
@@ -12,15 +13,47 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+/* Match react-day-picker to the app palette (neutral accent, emerald "today")
+   instead of its default blue. */
+.rdp-root {
+  --rdp-accent-color: #171717 !important;
+  --rdp-accent-background-color: #f5f5f5 !important;
+  --rdp-today-color: #059669 !important;
+  --rdp-selected-border: 2px solid #a3a3a3 !important; /* soft gray circle, not black */
+  --rdp-day-width: 32px !important;
+  --rdp-day-height: 32px !important;
+  --rdp-day_button-width: 30px !important;
+  --rdp-day_button-height: 30px !important;
+  --rdp-nav_button-width: 28px !important;
+  --rdp-nav_button-height: 28px !important;
+  --rdp-weekday-padding: 0.2rem 0 !important;
+  font-size: 0.8rem;
+  color: #a3a3a3; /* day numbers in the same soft gray as input placeholders */
+}
+
+/* Today: keep the emerald tint but the same size/weight as every other day. */
+.rdp-today:not(.rdp-outside) {
+  font-weight: 400 !important;
+  font-size: inherit !important;
+}
+
+/* Capitalize the French month name ("juillet 2026" -> "Juillet 2026"). */
+.rdp-caption_label {
+  text-transform: capitalize;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+}
+
+/* Nav chevrons: smaller and soft gray instead of large and black. */
+.rdp-chevron {
+  width: 16px;
+  height: 16px;
+  fill: #a3a3a3 !important;
+}
+

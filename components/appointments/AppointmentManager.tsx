@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useMemo, useState} from "react";
+import {useMemo, useState} from "react";
 import {ArrowDownUp, CalendarDays} from "lucide-react";
 import type {
   Appointment,
@@ -8,6 +8,7 @@ import type {
   SortOrder,
 } from "@/types/appointment";
 import {countByStatus, filterAndSort} from "@/lib/appointments";
+import {useNow} from "@/hooks/useNow";
 import {
   createAppointment,
   updateAppointment,
@@ -37,11 +38,7 @@ export default function AppointmentManager({
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   // Ticks each minute so "overdue" status turns over on its own.
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(id);
-  }, []);
+  const now = useNow();
 
   const counts = useMemo(
     () => countByStatus(appointments, now),

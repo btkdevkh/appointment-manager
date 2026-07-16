@@ -2,6 +2,7 @@
 
 import {useEffect, useRef, useState} from "react";
 import {Clock} from "lucide-react";
+import {useClickOutside} from "@/hooks/useClickOutside";
 
 type Props = {
   id?: string;
@@ -27,18 +28,7 @@ export default function TimePicker({id, value, onChange}: Props) {
 
   const [selectedHour, selectedMinute] = value ? value.split(":") : ["", ""];
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  useClickOutside(containerRef, () => setOpen(false), open);
 
   // Scroll the current selection into view when the popup opens.
   useEffect(() => {

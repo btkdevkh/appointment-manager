@@ -1,10 +1,11 @@
 "use client";
 
-import {useEffect, useRef, useState} from "react";
+import {useRef, useState} from "react";
 import {DayPicker} from "react-day-picker";
 import {fr} from "date-fns/locale";
 import {format} from "date-fns";
 import {Calendar} from "lucide-react";
+import {useClickOutside} from "@/hooks/useClickOutside";
 import "react-day-picker/style.css";
 
 type Props = {
@@ -17,18 +18,7 @@ export default function DatePicker({id, value, onChange}: Props) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  useClickOutside(containerRef, () => setOpen(false), open);
 
   return (
     <div className="relative" ref={containerRef}>

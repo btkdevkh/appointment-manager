@@ -10,13 +10,59 @@ datasource db {
   provider = "postgresql"
 }
 
+// User, Account, Session and VerificationToken follow the shape the Auth.js
+// Prisma adapter expects — it reads and writes these rows itself, so the field
+// names are its contract, not ours. `email` is optional and `emailVerified`
+// exists because the adapter's type demands them; with Google as the only
+// provider an email is always present in practice.
 model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  name         String?
-  image        String?
-  createdAt    DateTime      @default(now())
-  appointments Appointment[]
+  id            String        @id @default(cuid())
+  email         String?       @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  createdAt     DateTime      @default(now())
+  accounts      Account[]
+  sessions      Session[]
+  appointments  Appointment[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
 }
 
 model Appointment {

@@ -1,0 +1,45 @@
+name: CI
+
+# Gate for the one-feature-one-branch-into-main workflow: a PR that is red here
+# should not be merged. Pair with branch protection on `main` to enforce it.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    # No database or Google client is reachable from CI, and none is needed:
+    # tests mock both, and the app's only page is `force-dynamic`, so nothing is
+    # rendered at build time. These placeholders exist purely so module-level
+    # setup (the Prisma adapter, the Auth.js config) has something to read.
+    env:
+      DATABASE_URL: postgresql://user:pass@localhost:5432/db
+      DIRECT_URL: postgresql://user:pass@localhost:5432/db
+      AUTH_SECRET: ci-placeholder-secret-not-used-for-anything
+      AUTH_GOOGLE_ID: ci-placeholder
+      AUTH_GOOGLE_SECRET: ci-placeholder
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` runs the postinstall `prisma generate`, which the typecheck and
+      # build both need — the client is generated, not committed.
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npx tsc --noEmit
+
+      - run: npx vitest run
+
+      # `build:only` — `build` would re-run the tests that just ran.
+      - run: npm run build:only

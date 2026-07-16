@@ -24,21 +24,50 @@ Full appointment **CRUD UI**, working against **in-memory React state**
   (`DATABASE_URL` pooled for runtime, `DIRECT_URL` direct for migrations, wired
   through `prisma.config.ts`).
 - `lib/actions.ts`: server actions (list / create / update / toggle / delete),
-  each `revalidatePath("/")`. `getCurrentUserId()` returns a fixed
-  `PLACEHOLDER_USER_ID` for now (see next step).
+  each `revalidatePath("/")`.
 - `app/page.tsx` is a server component that loads initial data; the manager
   seeds from it and calls the actions with optimistic updates (revert on error).
 - Verified end-to-end: live read via the app + a create/toggle/read/delete
   round-trip through the pooled adapter.
 
-## Next step: Authentication
+**Authentication — NextAuth (Auth.js v5) + Google** — appointments are scoped to
+a real signed-in user; the `PLACEHOLDER_USER_ID` stub is gone:
 
-**NextAuth with Google login** (final major piece). Its main job is to scope
-appointments to a real user, replacing the stubbed `PLACEHOLDER_USER_ID`:
+- `next-auth@5` (beta — the App Router-native line) + `@auth/prisma-adapter`.
+  Config in `lib/auth.ts`, route handler at `app/api/auth/[...nextauth]/`.
+- Schema gained `Account` / `Session` / `VerificationToken` and the adapter's
+  `User` fields (`email` is now nullable, `emailVerified` added) — its contract,
+  not ours. Migration `add_auth_tables` applied to Neon.
+- Session strategy is **database** (the adapter's default), so sessions live in
+  the `Session` table. A `session` callback copies the user id onto the session,
+  which every appointment query scopes on.
+- `requireUserId()` in `lib/actions.ts` reads the session and throws
+  `Non authentifié`. Each action calls it directly — server actions are public
+  endpoints, so the UI gating is not the boundary. It's memoized with React
+  `cache()` per the DAL pattern in Next's bundled auth guide, since database
+  sessions make every `auth()` call a round trip.
+- `test/actions.test.ts` covers that boundary: each action rejects an
+  unauthenticated caller and scopes its query to the session user.
+- Signed out, `app/page.tsx` renders `components/auth/LandingPage.tsx` (sign-in
+  button, no data fetch); signed in, the manager renders with a `UserMenu`
+  (avatar + sign out) passed into its header as a node.
+- Secrets: `AUTH_SECRET` / `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` in
+  `.env.local`; `.env.example` documents every variable. Google's redirect URI
+  for dev is `http://localhost:3000/api/auth/callback/google`.
 
-1. Add NextAuth (Google provider) + a Prisma adapter; extend the `User` model /
-   add the auth tables NextAuth needs (Account/Session) via a migration.
-2. Replace `getCurrentUserId()` in `lib/actions.ts` with the session user's id;
-   protect the actions (reject when signed out).
-3. Add sign-in / sign-out UI; gate the manager behind auth.
-4. Drop the placeholder user once real users exist.
+Verified end-to-end against real Google credentials: signing in wrote the
+expected `User` / `Account` / `Session` rows, the landing page renders signed
+out, and the manager renders signed in with the avatar and sign-out control.
+
+## Next step
+
+No major piece outstanding. Worth considering:
+
+- **Deploying to Vercel**: set `AUTH_SECRET` (a fresh one), `AUTH_GOOGLE_ID`,
+  `AUTH_GOOGLE_SECRET`, `DATABASE_URL` and `DIRECT_URL` in the project's env
+  vars; add `https://<domain>/api/auth/callback/google` to the Google client's
+  redirect URIs; publish the OAuth consent screen (it's in Testing mode, so only
+  listed test users can sign in); and run migrations at deploy — `next build`
+  does not, so the build command needs `prisma migrate deploy && next build`.
+- Components/UI have no tests, and no component-testing setup exists yet.
+- `next-auth@5` is a beta pin; revisit when it goes stable.

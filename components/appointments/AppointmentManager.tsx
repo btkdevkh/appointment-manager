@@ -20,9 +20,15 @@ import AppointmentList from "./AppointmentList";
 
 type Props = {
   initialAppointments: Appointment[];
+  // Rendered in the header. Passed in as a node because it is a server
+  // component (it closes over the sign-out server action) and this is not.
+  userMenu?: React.ReactNode;
 };
 
-export default function AppointmentManager({initialAppointments}: Props) {
+export default function AppointmentManager({
+  initialAppointments,
+  userMenu,
+}: Props) {
   const [appointments, setAppointments] =
     useState<Appointment[]>(initialAppointments);
   const [tab, setTab] = useState<FilterTab>("all");
@@ -146,17 +152,20 @@ export default function AppointmentManager({initialAppointments}: Props) {
   return (
     <div className="min-h-screen w-full bg-neutral-50">
     <main className="mx-auto w-full max-w-2xl px-4 py-10">
-      <header className="mb-6">
-        <h1 className="flex items-center gap-2 text-2xl font-bold text-neutral-900">
-          <CalendarDays className="text-emerald-500" size={26} />
-          Rendez-vous
-        </h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          {counts.upcoming} à venir · {counts.completed} terminés
-          {counts.overdue > 0 && (
-            <span className="text-red-600"> · {counts.overdue} en retard</span>
-          )}
-        </p>
+      <header className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-neutral-900">
+            <CalendarDays className="text-emerald-500" size={26} />
+            Rendez-vous
+          </h1>
+          <p className="mt-1 text-sm text-neutral-500">
+            {counts.upcoming} à venir · {counts.completed} terminés
+            {counts.overdue > 0 && (
+              <span className="text-red-600"> · {counts.overdue} en retard</span>
+            )}
+          </p>
+        </div>
+        {userMenu}
       </header>
 
       <AppointmentForm

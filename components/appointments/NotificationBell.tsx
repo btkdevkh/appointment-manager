@@ -47,7 +47,13 @@ const NotificationBell = ({reminders, now}: Props) => {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-2 shadow-lg">
+        // Below `sm` the panel is pinned to the viewport with equal margins
+        // rather than to the bell: the bell has the user menu to its right, so
+        // anchoring a 18rem panel at `right-0` ran its left edge off a phone
+        // screen. Centring it on the bell would only move the overflow to the
+        // other side — at that width the panel has to give up the anchor and
+        // shrink. `top` stays auto, so it still sits just under the bell.
+        <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-2 shadow-lg max-sm:fixed max-sm:inset-x-4 max-sm:w-auto">
           <p className="px-2 py-1.5 text-xs font-medium uppercase tracking-wide text-neutral-400">
             Prochains rendez-vous
           </p>

@@ -111,7 +111,15 @@ No major piece outstanding. Worth considering:
 - The pickers in `components/ui/` have never been click-tested in a browser.
   The date picker's popup now opens inside the form dialog, which is untested
   on short viewports — it may extend past the panel.
-- Preview deployments build green again, but still can't sign in — each gets a
-  unique URL that isn't registered with Google, so a preview only ever shows
-  the landing page. Fixable with `AUTH_REDIRECT_PROXY_URL` if it matters.
+- **Preview sign-in is wired but unproven.** `AUTH_REDIRECT_PROXY_URL` is set
+  (see `.env.example` for the mechanism and why both scopes need it), and both
+  production and a preview have been redeployed to pick it up. The value is
+  right by construction — Auth.js appends `/callback/google`, giving exactly
+  the URI already registered with Google — and production still reports its own
+  `callbackUrl`, so it is unaffected. But the round trip has never actually
+  been run: preview URLs sit behind Vercel SSO, so it can't be driven from a
+  terminal, and completing it needs a real Google login. **Someone should open
+  a preview in a browser and sign in.** If it fails, the likely culprits are a
+  `redirect_uri_mismatch` from Google (wrong proxy value) or the forward
+  landing back on the Vercel SSO gate.
 - `next-auth@5` is a beta pin; revisit when it goes stable.

@@ -7,8 +7,8 @@ _Living document — update as the project progresses._
 Full appointment **CRUD UI**, working against **in-memory React state**
 (`components/appointments/AppointmentManager.tsx`):
 
-- Create, edit (the form doubles as the edit form, remounted via React `key`),
-  delete (French confirmation modal), toggle complete.
+- Create, edit (the form doubles as the edit form), delete (French confirmation
+  modal), toggle complete.
 - Filter tabs (Tous / À venir / En retard / Terminés), sort by start time.
 - "Aujourd'hui" tag on today's upcoming items.
 - Custom French **date & time pickers** (`components/ui/`).
@@ -78,12 +78,37 @@ out, and the manager renders signed in with the avatar and sign-out control.
   reports the production callback (so Auth.js infers `trustHost` on Vercel —
   don't set `AUTH_TRUST_HOST` there), `/api/auth/session` returns `200 null`.
 
+**The appointment form lives in a dialog** rather than sitting permanently at
+the top of the page — a deliberate departure from
+`context/screenshots/app-ui-prototype.png`, which still shows the inline form:
+
+- `components/ui/Modal.tsx` is the shared dialog primitive — overlay, Escape,
+  and the `aria-labelledby` heading. `ConfirmDialog` is now a thin wrapper over
+  it rather than a second implementation of the same thing.
+- An "Ajouter" button on the filter/sort toolbar opens a blank form; an item's
+  edit button opens the same form prefilled. The dialog closes before the
+  server action resolves, matching the list's existing optimistic updates.
+- Closing unmounts the form, so its state is re-derived on every open. The
+  React `key` that used to force this is gone, and `closeForm` no longer clears
+  `editingId` — `openCreate` / `openEdit` own that, so one mechanism provides
+  the behaviour and a test can actually catch its loss.
+- Component rendering is now tested (`test/Modal.test.tsx`,
+  `test/AppointmentManager.test.tsx`) — no new dependencies were needed.
+
 ## Next step
 
 No major piece outstanding. Worth considering:
 
-- Components/UI have no tests, and no component-testing setup exists yet.
-  The pickers in `components/ui/` have never been click-tested in a browser.
-- Preview deployments can't sign in — each gets a unique URL that isn't
+- The pickers in `components/ui/` have never been click-tested in a browser.
+  The date picker's popup now opens inside the form dialog, which is untested
+  on short viewports — it may extend past the panel.
+- **Vercel Preview deployments have been failing since at least PR #7.**
+  `prisma migrate deploy` reports "The datasource.url property is required in
+  your Prisma config file", i.e. neither `DIRECT_URL` nor `DATABASE_URL` is set
+  in Vercel's *Preview* scope — Production has them and deploys fine. The claim
+  above that Preview points at the `development` branch does not currently
+  hold. PRs are being merged with this check red; either set the Preview env
+  vars or keep `prisma migrate deploy` out of preview builds.
+- Preview deployments can't sign in either — each gets a unique URL that isn't
   registered with Google. Fixable with `AUTH_REDIRECT_PROXY_URL` if it matters.
 - `next-auth@5` is a beta pin; revisit when it goes stable.

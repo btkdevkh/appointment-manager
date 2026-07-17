@@ -71,6 +71,15 @@ out, and the manager renders signed in with the avatar and sign-out control.
   never in a file on this machine — so no local command (notably `prisma migrate
   dev`, which can reset on drift) can reach it. Vercel's Preview scope points at
   `development`, so a PR's preview can't migrate production.
+- What enforces that last point is the **scoping** of the database URLs, which
+  is easy to get subtly wrong: `DATABASE_URL` and `DIRECT_URL` exist twice each
+  in Vercel, as separate Preview and Production entries with different values —
+  *not* as one entry with both boxes ticked. Ticking both would hand previews
+  the production connection string, and since `build:vercel` runs `prisma
+  migrate deploy`, every PR would migrate production before review. `vercel env
+  ls` should always show four rows here; two would mean the guarantee is gone.
+  (Preview had no database URL at all until 2026-07-17, which failed every
+  preview build from PR #7 to #10 — the design was documented but not set up.)
 - `DIRECT_URL` must be the **unpooled** host (no `-pooler`): migrations need a
   real session, not PgBouncer. Neon's console hands you the pooled string for
   both by default.
@@ -102,13 +111,7 @@ No major piece outstanding. Worth considering:
 - The pickers in `components/ui/` have never been click-tested in a browser.
   The date picker's popup now opens inside the form dialog, which is untested
   on short viewports — it may extend past the panel.
-- **Vercel Preview deployments have been failing since at least PR #7.**
-  `prisma migrate deploy` reports "The datasource.url property is required in
-  your Prisma config file", i.e. neither `DIRECT_URL` nor `DATABASE_URL` is set
-  in Vercel's *Preview* scope — Production has them and deploys fine. The claim
-  above that Preview points at the `development` branch does not currently
-  hold. PRs are being merged with this check red; either set the Preview env
-  vars or keep `prisma migrate deploy` out of preview builds.
-- Preview deployments can't sign in either — each gets a unique URL that isn't
-  registered with Google. Fixable with `AUTH_REDIRECT_PROXY_URL` if it matters.
+- Preview deployments build green again, but still can't sign in — each gets a
+  unique URL that isn't registered with Google, so a preview only ever shows
+  the landing page. Fixable with `AUTH_REDIRECT_PROXY_URL` if it matters.
 - `next-auth@5` is a beta pin; revisit when it goes stable.

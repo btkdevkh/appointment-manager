@@ -32,7 +32,7 @@ type AppointmentRow = {
   createdAt: Date;
 };
 
-function serialize(row: AppointmentRow): Appointment {
+const serialize = (row: AppointmentRow): Appointment => {
   return {
     id: row.id,
     title: row.title,
@@ -41,7 +41,7 @@ function serialize(row: AppointmentRow): Appointment {
     completed: row.completed,
     createdAt: row.createdAt.toISOString(),
   };
-}
+};
 
 export type AppointmentInput = {
   title: string;
@@ -52,17 +52,17 @@ export type AppointmentInput = {
 // --- Actions ----------------------------------------------------------------
 
 /** All of the current user's appointments, soonest first. */
-export async function listAppointments(): Promise<Appointment[]> {
+export const listAppointments = async (): Promise<Appointment[]> => {
   const rows = await prisma.appointment.findMany({
     where: { userId: await requireUserId() },
     orderBy: { startsAt: "asc" },
   });
   return rows.map(serialize);
-}
+};
 
-export async function createAppointment(
+export const createAppointment = async (
   input: AppointmentInput
-): Promise<Appointment> {
+): Promise<Appointment> => {
   const userId = await requireUserId();
   const row = await prisma.appointment.create({
     data: {
@@ -75,12 +75,12 @@ export async function createAppointment(
   });
   revalidatePath("/");
   return serialize(row);
-}
+};
 
-export async function updateAppointment(
+export const updateAppointment = async (
   id: string,
   input: AppointmentInput
-): Promise<Appointment> {
+): Promise<Appointment> => {
   // Scope by userId so a user can only edit their own appointments.
   const { count } = await prisma.appointment.updateMany({
     where: { id, userId: await requireUserId() },
@@ -94,9 +94,9 @@ export async function updateAppointment(
   const row = await prisma.appointment.findUniqueOrThrow({ where: { id } });
   revalidatePath("/");
   return serialize(row);
-}
+};
 
-export async function toggleComplete(id: string): Promise<Appointment> {
+export const toggleComplete = async (id: string): Promise<Appointment> => {
   const current = await prisma.appointment.findFirst({
     where: { id, userId: await requireUserId() },
     select: { completed: true },
@@ -108,11 +108,11 @@ export async function toggleComplete(id: string): Promise<Appointment> {
   });
   revalidatePath("/");
   return serialize(row);
-}
+};
 
-export async function deleteAppointment(id: string): Promise<void> {
+export const deleteAppointment = async (id: string): Promise<void> => {
   await prisma.appointment.deleteMany({
     where: { id, userId: await requireUserId() },
   });
   revalidatePath("/");
-}
+};

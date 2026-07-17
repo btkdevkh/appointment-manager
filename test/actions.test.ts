@@ -30,7 +30,7 @@ const {
 const USER_ID = "user-1";
 const OTHER_INPUT = {title: "Dentiste", startsAt: "2026-08-01T09:00:00.000Z"};
 
-function row(overrides: Record<string, unknown> = {}) {
+const row = (overrides: Record<string, unknown> = {}) => {
   return {
     id: "a1",
     title: "Dentiste",
@@ -40,11 +40,11 @@ function row(overrides: Record<string, unknown> = {}) {
     createdAt: new Date("2026-07-16T12:00:00.000Z"),
     ...overrides,
   };
-}
+};
 
-function signedIn() {
+const signedIn = () => {
   authMock.mockResolvedValue({user: {id: USER_ID}});
-}
+};
 
 beforeEach(() => {
   vi.clearAllMocks();

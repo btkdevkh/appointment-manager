@@ -19,15 +19,15 @@ const labelClass =
 const inputClass =
   "w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-800 placeholder:text-neutral-400 outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100";
 
-function timeString(date: Date): string {
+const timeString = (date: Date): string => {
   const h = String(date.getHours()).padStart(2, "0");
   const m = String(date.getMinutes()).padStart(2, "0");
   return `${h}:${m}`;
-}
+};
 
 // The parent remounts this form (via `key`) when `editing` changes, so the
 // initial state below is re-derived from the appointment being edited.
-export default function AppointmentForm({onSubmit, editing, onCancel}: Props) {
+const AppointmentForm = ({onSubmit, editing, onCancel}: Props) => {
   const editingStart = editing ? new Date(editing.startsAt) : undefined;
   const [title, setTitle] = useState(editing?.title ?? "");
   const [date, setDate] = useState<Date | undefined>(editingStart);
@@ -37,14 +37,14 @@ export default function AppointmentForm({onSubmit, editing, onCancel}: Props) {
   const isEditing = Boolean(editing);
   const canSubmit = title.trim() !== "" && date !== undefined && time !== "";
 
-  function reset() {
+  const reset = () => {
     setTitle("");
     setDate(undefined);
     setTime("");
     setNotes("");
-  }
+  };
 
-  function handleSubmit(event: React.FormEvent) {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!canSubmit || !date) return;
 
@@ -59,7 +59,7 @@ export default function AppointmentForm({onSubmit, editing, onCancel}: Props) {
     });
 
     if (!isEditing) reset();
-  }
+  };
 
   return (
     <form
@@ -131,4 +131,6 @@ export default function AppointmentForm({onSubmit, editing, onCancel}: Props) {
       </div>
     </form>
   );
-}
+};
+
+export default AppointmentForm;

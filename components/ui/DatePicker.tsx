@@ -14,7 +14,7 @@ type Props = {
   onChange: (date: Date | undefined) => void;
 };
 
-export default function DatePicker({id, value, onChange}: Props) {
+const DatePicker = ({id, value, onChange}: Props) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -51,4 +51,6 @@ export default function DatePicker({id, value, onChange}: Props) {
       )}
     </div>
   );
-}
+};
+
+export default DatePicker;

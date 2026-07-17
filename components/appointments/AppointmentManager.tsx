@@ -26,10 +26,10 @@ type Props = {
   userMenu?: React.ReactNode;
 };
 
-export default function AppointmentManager({
+const AppointmentManager = ({
   initialAppointments,
   userMenu,
-}: Props) {
+}: Props) => {
   const [appointments, setAppointments] =
     useState<Appointment[]>(initialAppointments);
   const [tab, setTab] = useState<FilterTab>("all");
@@ -59,7 +59,7 @@ export default function AppointmentManager({
   // Each mutation updates local state optimistically for a snappy UI, persists
   // via a server action, then reconciles with the row the server returns (or
   // reverts on failure). Local state stays the source of truth for the list.
-  async function submitAppointment(data: FormData) {
+  const submitAppointment = async (data: FormData) => {
     if (editingId) {
       const id = editingId;
       const original = appointments.find((a) => a.id === id);
@@ -99,9 +99,9 @@ export default function AppointmentManager({
         alert("Échec de la création du rendez-vous.");
       }
     }
-  }
+  };
 
-  async function toggleComplete(id: string) {
+  const toggleComplete = async (id: string) => {
     const original = appointments.find((a) => a.id === id);
     if (!original) return;
     setAppointments((prev) =>
@@ -115,13 +115,13 @@ export default function AppointmentManager({
       setAppointments((prev) => prev.map((a) => (a.id === id ? original : a)));
       alert("Échec de la mise à jour du rendez-vous.");
     }
-  }
+  };
 
   const pendingDelete = pendingDeleteId
     ? appointments.find((a) => a.id === pendingDeleteId) ?? null
     : null;
 
-  async function confirmDelete() {
+  const confirmDelete = async () => {
     if (!pendingDeleteId) return;
     const id = pendingDeleteId;
     const original = appointments.find((a) => a.id === id);
@@ -135,7 +135,7 @@ export default function AppointmentManager({
       if (original) setAppointments((prev) => [...prev, original]);
       alert("Échec de la suppression du rendez-vous.");
     }
-  }
+  };
 
   const tabs: {value: FilterTab; label: string; count: number}[] = [
     {value: "all", label: "Tous", count: appointments.length},
@@ -231,4 +231,6 @@ export default function AppointmentManager({
       />
     </div>
   );
-}
+};
+
+export default AppointmentManager;

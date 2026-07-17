@@ -55,6 +55,7 @@ Components are not tested yet — there is no component-rendering setup, only `r
 ## Stack & conventions
 
 - **Next.js 16** (App Router) + **React 19** + **TypeScript** (strict).
+- **Functions are `const` arrow functions, not `function` declarations** — components, hooks, server actions, helpers and test helpers alike. Components declare the arrow, then `export default` it on a separate line at the bottom of the file. Two consequences worth knowing: arrow consts aren't hoisted, so a helper called at module evaluation time must be declared above its call site (one referenced only inside a component body is fine either way); and in `"use server"` files every export must still be an `async` arrow, since Next.js requires the exports to be async functions.
 - **Tailwind CSS 4** (via `@tailwindcss/postcss`; no `tailwind.config` — configured in CSS).
 - **lucide-react** for icons.
 - **react-day-picker** + **date-fns** (`fr` locale) power the French date picker (`components/ui/DatePicker.tsx`). Time uses a custom `components/ui/TimePicker.tsx` (24h). Both replace native `<input type="date/time">`, whose format/popup styling can't be locale-forced or themed — the pickers are styled in `globals.css` (`.rdp-*` overrides) and Tailwind.

@@ -5,11 +5,11 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 import {renderHook} from "@testing-library/react";
 import {useClickOutside} from "@/hooks/useClickOutside";
 
-function press(target: Element) {
+const press = (target: Element) => {
   target.dispatchEvent(new MouseEvent("mousedown", {bubbles: true}));
-}
+};
 
-function setup({active = true} = {}) {
+const setup = ({active = true} = {}) => {
   const inside = document.createElement("div");
   const child = document.createElement("button");
   inside.append(child);
@@ -25,7 +25,7 @@ function setup({active = true} = {}) {
   );
 
   return {inside, child, outside, onOutside, view};
-}
+};
 
 afterEach(() => {
   document.body.innerHTML = "";

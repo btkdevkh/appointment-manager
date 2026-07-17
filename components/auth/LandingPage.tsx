@@ -2,7 +2,7 @@ import {CalendarDays, CheckCircle2, Clock} from "lucide-react";
 import SignInButton from "./SignInButton";
 
 // Shown to signed-out visitors in place of the appointment manager.
-export default function LandingPage() {
+const LandingPage = () => {
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-neutral-50 px-4 py-10">
       <main className="w-full max-w-md text-center">
@@ -36,19 +36,21 @@ export default function LandingPage() {
       </main>
     </div>
   );
-}
+};
 
-function Feature({
+const Feature = ({
   icon,
   children,
 }: {
   icon: React.ReactNode;
   children: React.ReactNode;
-}) {
+}) => {
   return (
     <li className="flex items-center gap-2.5 text-sm text-neutral-600">
       <span className="text-emerald-500">{icon}</span>
       {children}
     </li>
   );
-}
+};
+
+export default LandingPage;

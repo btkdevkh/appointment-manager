@@ -9,7 +9,7 @@ import {
 
 const NOW = new Date("2026-07-16T12:00:00.000Z");
 
-function make(overrides: Partial<Appointment> = {}): Appointment {
+const make = (overrides: Partial<Appointment> = {}): Appointment => {
   return {
     id: crypto.randomUUID(),
     title: "Rendez-vous",
@@ -18,7 +18,7 @@ function make(overrides: Partial<Appointment> = {}): Appointment {
     createdAt: "2026-07-01T00:00:00.000Z",
     ...overrides,
   };
-}
+};
 
 describe("getStatus", () => {
   it("is 'upcoming' when not completed and in the future", () => {

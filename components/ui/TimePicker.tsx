@@ -20,7 +20,7 @@ const cellClass = (selected: boolean) =>
       : "text-neutral-500 hover:bg-neutral-100"
   }`;
 
-export default function TimePicker({id, value, onChange}: Props) {
+const TimePicker = ({id, value, onChange}: Props) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const hourRef = useRef<HTMLButtonElement>(null);
@@ -37,13 +37,13 @@ export default function TimePicker({id, value, onChange}: Props) {
     minuteRef.current?.scrollIntoView({block: "center"});
   }, [open]);
 
-  function pickHour(hour: string) {
+  const pickHour = (hour: string) => {
     onChange(`${hour}:${selectedMinute || "00"}`);
-  }
+  };
 
-  function pickMinute(minute: string) {
+  const pickMinute = (minute: string) => {
     onChange(`${selectedHour || "00"}:${minute}`);
-  }
+  };
 
   return (
     <div className="relative" ref={containerRef}>
@@ -95,4 +95,6 @@ export default function TimePicker({id, value, onChange}: Props) {
       )}
     </div>
   );
-}
+};
+
+export default TimePicker;

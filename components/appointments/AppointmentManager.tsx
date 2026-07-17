@@ -1,7 +1,7 @@
 "use client";
 
 import {useMemo, useState} from "react";
-import {ArrowDownUp, CalendarDays} from "lucide-react";
+import {ArrowDownUp, CalendarDays, Plus} from "lucide-react";
 import type {
   Appointment,
   FilterTab,
@@ -16,6 +16,7 @@ import {
   toggleComplete as toggleCompleteAction,
 } from "@/lib/actions";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import Modal from "@/components/ui/Modal";
 import AppointmentForm from "./AppointmentForm";
 import AppointmentList from "./AppointmentList";
 
@@ -35,6 +36,7 @@ const AppointmentManager = ({
   const [tab, setTab] = useState<FilterTab>("all");
   const [order, setOrder] = useState<SortOrder>("asc");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   // Ticks each minute so "overdue" status turns over on its own.
@@ -56,17 +58,39 @@ const AppointmentManager = ({
 
   type FormData = {title: string; startsAt: string; notes?: string};
 
+  const openCreate = () => {
+    setEditingId(null);
+    setFormOpen(true);
+  };
+
+  const openEdit = (appointment: Appointment) => {
+    setEditingId(appointment.id);
+    setFormOpen(true);
+  };
+
+  // Only closes. Which appointment is being edited is owned by openCreate /
+  // openEdit, so that "open a blank form" is stated in one place rather than
+  // depending on a previous close having tidied up.
+  const closeForm = () => {
+    setFormOpen(false);
+  };
+
   // Each mutation updates local state optimistically for a snappy UI, persists
   // via a server action, then reconciles with the row the server returns (or
   // reverts on failure). Local state stays the source of truth for the list.
+  //
+  // The dialog closes before the action resolves, matching the optimistic list:
+  // the change is already on screen, so holding the form open would only make
+  // the app feel slower than it is.
   const submitAppointment = async (data: FormData) => {
-    if (editingId) {
-      const id = editingId;
+    const id = editingId;
+    closeForm();
+
+    if (id) {
       const original = appointments.find((a) => a.id === id);
       setAppointments((prev) =>
         prev.map((a) => (a.id === id ? {...a, ...data} : a))
       );
-      setEditingId(null);
       try {
         const saved = await updateAppointment(id, data);
         setAppointments((prev) => prev.map((a) => (a.id === id ? saved : a)));
@@ -125,7 +149,7 @@ const AppointmentManager = ({
     if (!pendingDeleteId) return;
     const id = pendingDeleteId;
     const original = appointments.find((a) => a.id === id);
-    if (id === editingId) setEditingId(null);
+    if (id === editingId) closeForm();
     setAppointments((prev) => prev.filter((a) => a.id !== id));
     setPendingDeleteId(null);
     try {
@@ -147,72 +171,103 @@ const AppointmentManager = ({
   ];
 
   return (
-    <div className="min-h-screen w-full bg-neutral-50">
-    <main className="mx-auto w-full max-w-2xl px-4 py-10">
-      <header className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-neutral-900">
-            <CalendarDays className="text-emerald-500" size={26} />
-            Rendez-vous
-          </h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            {counts.upcoming} à venir · {counts.completed} terminés
-            {counts.overdue > 0 && (
-              <span className="text-red-600"> · {counts.overdue} en retard</span>
-            )}
-          </p>
-        </div>
-        {userMenu}
-      </header>
+    // The shell is exactly one viewport tall and never scrolls; the list below
+    // is the only scroll container, so the header and toolbar stay put however
+    // many appointments there are. `dvh` rather than `vh` so mobile browser
+    // chrome doesn't push the bottom of the list out of reach.
+    <div className="h-dvh w-full overflow-hidden bg-neutral-50">
+      <main className="mx-auto flex h-full w-full max-w-2xl flex-col px-4 py-10">
+        <header className="mb-6 flex shrink-0 items-start justify-between gap-4">
+          <div>
+            <h1 className="flex items-center gap-2 text-2xl font-bold text-neutral-900">
+              <CalendarDays className="text-emerald-500" size={26} />
+              Rendez-vous
+            </h1>
+            <p className="mt-1 text-sm text-neutral-500">
+              {counts.upcoming} à venir · {counts.completed} terminés
+              {counts.overdue > 0 && (
+                <span className="text-red-600">
+                  {" "}
+                  · {counts.overdue} en retard
+                </span>
+              )}
+            </p>
+          </div>
+          {userMenu}
+        </header>
 
-      <AppointmentForm
-        key={editingId ?? "new"}
-        onSubmit={submitAppointment}
-        editing={editing}
-        onCancel={() => setEditingId(null)}
-      />
-
-      <div className="mt-6 mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 rounded-lg bg-neutral-100 p-1">
-          {tabs.map(({value, label, count}) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setTab(value)}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                tab === value
-                  ? "bg-neutral-900 text-white"
-                  : "text-neutral-500 hover:text-neutral-800"
-              }`}
-            >
-              {label}{" "}
-              <span
-                className={tab === value ? "text-neutral-300" : "text-neutral-400"}
+        <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-1 rounded-lg bg-neutral-100 p-1">
+            {tabs.map(({value, label, count}) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setTab(value)}
+                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  tab === value
+                    ? "bg-neutral-900 text-white"
+                    : "text-neutral-500 hover:text-neutral-800"
+                }`}
               >
-                {count}
-              </span>
+                {label}{" "}
+                <span
+                  className={
+                    tab === value ? "text-neutral-300" : "text-neutral-400"
+                  }
+                >
+                  {count}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setOrder((o) => (o === "asc" ? "desc" : "asc"))}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-50"
+            >
+              <ArrowDownUp size={14} />
+              {order === "asc" ? "Plus anciens d'abord" : "Plus récents d'abord"}
             </button>
-          ))}
+
+            <button
+              type="button"
+              onClick={openCreate}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
+            >
+              <Plus size={14} />
+              Ajouter
+            </button>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setOrder((o) => (o === "asc" ? "desc" : "asc"))}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-50"
-        >
-          <ArrowDownUp size={14} />
-          {order === "asc" ? "Plus anciens d'abord" : "Plus récents d'abord"}
-        </button>
-      </div>
+        {/* min-h-0: a flex item's default `min-height: auto` refuses to shrink
+            below its content, which would push the overflow onto the page
+            instead of keeping it in here. */}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <AppointmentList
+            appointments={visible}
+            now={now}
+            onToggleComplete={toggleComplete}
+            onEdit={openEdit}
+            onDelete={setPendingDeleteId}
+          />
+        </div>
+      </main>
 
-      <AppointmentList
-        appointments={visible}
-        now={now}
-        onToggleComplete={toggleComplete}
-        onEdit={(appointment) => setEditingId(appointment.id)}
-        onDelete={setPendingDeleteId}
-      />
-    </main>
+      <Modal
+        open={formOpen}
+        onClose={closeForm}
+        title={editing ? "Modifier le rendez-vous" : "Nouveau rendez-vous"}
+        panelClassName="max-w-md"
+      >
+        <AppointmentForm
+          onSubmit={submitAppointment}
+          editing={editing}
+          onCancel={closeForm}
+        />
+      </Modal>
 
       <ConfirmDialog
         open={pendingDelete !== null}

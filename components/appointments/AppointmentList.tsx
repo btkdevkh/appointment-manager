@@ -26,7 +26,7 @@ const AppointmentList = ({
         <CalendarX size={28} className="text-neutral-300" />
         <p className="font-medium text-neutral-600">Aucun rendez-vous prévu</p>
         <p className="text-sm text-neutral-400">
-          Ajoutez votre premier rendez-vous ci-dessus pour commencer.
+          Ajoutez votre premier rendez-vous pour commencer.
         </p>
       </div>
     );

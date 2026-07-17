@@ -31,15 +31,19 @@ npx vitest run test/appointments.test.ts   # a single test file
 
 The first half — that each feature *has* tests — no tool can enforce; a passing test may assert nothing. It's on whoever writes and reviews the change. When you add a test, confirm it can fail: break the code it covers on purpose and watch it go red. Green on its own proves nothing.
 
-Tests use **Vitest** and live in **`test/`**, not beside the code they cover. The default environment is `node`; files needing a DOM opt in with a `// @vitest-environment jsdom` docblock on line 1, so the pure-logic tests stay fast. Hooks are tested with `renderHook` from `@testing-library/react`.
+Tests use **Vitest** and live in **`test/`**, not beside the code they cover. The default environment is `node`; files needing a DOM opt in with a `// @vitest-environment jsdom` docblock on line 1, so the pure-logic tests stay fast. Hooks are tested with `renderHook` from `@testing-library/react`, components with `render` from the same package.
+
+Vitest runs without `globals`, so Testing Library can't register its own auto-cleanup — a component test file must call `afterEach(cleanup)` itself or the DOM leaks between cases.
 
 Covered so far:
 
 - `test/appointments.test.ts` — the pure logic in `lib/` (status/filter/sort). Pass an explicit `now` to the status helpers so results don't depend on the wall clock.
 - `test/actions.test.ts` — that every server action rejects an unauthenticated caller and scopes its query to the session user. Session and Prisma are mocked; no database. **Any new action needs a case here** — this is the only automated check on that boundary.
 - `test/useClickOutside.test.ts`, `test/useNow.test.ts` — the shared hooks (jsdom).
+- `test/Modal.test.tsx` — the shared dialog primitive: what it renders when open vs. closed, Escape and overlay dismissal, and its `aria-labelledby` wiring (jsdom).
+- `test/AppointmentManager.test.tsx` — the appointment form dialog: that the form stays off the page until asked for, opens blank from the toolbar and prefilled from an item's edit button, and closes on cancel/Escape/save. The server actions are mocked (jsdom).
 
-Components are not tested yet — there is no component-rendering setup, only `renderHook`.
+The pickers in `components/ui/` are still only exercised through the code that renders them, never click-tested directly.
 
 ## Git workflow
 

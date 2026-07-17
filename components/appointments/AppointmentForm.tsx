@@ -11,7 +11,7 @@ type FormData = {title: string; startsAt: string; notes?: string};
 type Props = {
   onSubmit: (data: FormData) => void;
   editing?: Appointment | null;
-  onCancel?: () => void;
+  onCancel: () => void;
 };
 
 const labelClass =
@@ -25,8 +25,9 @@ const timeString = (date: Date): string => {
   return `${h}:${m}`;
 };
 
-// The parent remounts this form (via `key`) when `editing` changes, so the
-// initial state below is re-derived from the appointment being edited.
+// Lives inside a Modal, which remounts it on each open — so the initial state
+// below is re-derived from the appointment being edited, and submitting needs
+// no reset: closing unmounts the form and the next open starts fresh.
 const AppointmentForm = ({onSubmit, editing, onCancel}: Props) => {
   const editingStart = editing ? new Date(editing.startsAt) : undefined;
   const [title, setTitle] = useState(editing?.title ?? "");
@@ -36,13 +37,6 @@ const AppointmentForm = ({onSubmit, editing, onCancel}: Props) => {
 
   const isEditing = Boolean(editing);
   const canSubmit = title.trim() !== "" && date !== undefined && time !== "";
-
-  const reset = () => {
-    setTitle("");
-    setDate(undefined);
-    setTime("");
-    setNotes("");
-  };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -57,23 +51,19 @@ const AppointmentForm = ({onSubmit, editing, onCancel}: Props) => {
       startsAt: startsAt.toISOString(),
       notes: notes.trim() || undefined,
     });
-
-    if (!isEditing) reset();
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="rounded-2xl border border-neutral-200 bg-white/60 p-5 shadow-sm"
-    >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-        <div className="flex-1">
+    <form onSubmit={handleSubmit} className="mt-4">
+      <div className="flex flex-col gap-4">
+        <div>
           <label htmlFor="title" className={labelClass}>
             Titre
           </label>
           <input
             id="title"
             type="text"
+            autoFocus
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Dentiste, réunion, café avec Sam…"
@@ -81,53 +71,53 @@ const AppointmentForm = ({onSubmit, editing, onCancel}: Props) => {
           />
         </div>
 
-        <div>
-          <label htmlFor="date" className={labelClass}>
-            Date
-          </label>
-          <DatePicker id="date" value={date} onChange={setDate} />
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <label htmlFor="date" className={labelClass}>
+              Date
+            </label>
+            <DatePicker id="date" value={date} onChange={setDate} />
+          </div>
+
+          <div className="flex-1">
+            <label htmlFor="time" className={labelClass}>
+              Heure
+            </label>
+            <TimePicker id="time" value={time} onChange={setTime} />
+          </div>
         </div>
 
         <div>
-          <label htmlFor="time" className={labelClass}>
-            Heure
+          <label htmlFor="notes" className={labelClass}>
+            Notes
           </label>
-          <TimePicker id="time" value={time} onChange={setTime} />
-        </div>
-
-        <div className="flex items-center gap-2">
-          {isEditing && (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-50"
-            >
-              Annuler
-            </button>
-          )}
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
-          >
-            {isEditing ? <Check size={16} /> : <Plus size={16} />}
-            {isEditing ? "Enregistrer" : "Ajouter"}
-          </button>
+          <input
+            id="notes"
+            type="text"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Facultatif — lieu, préparation, participants…"
+            className={inputClass}
+          />
         </div>
       </div>
 
-      <div className="mt-4">
-        <label htmlFor="notes" className={labelClass}>
-          Notes
-        </label>
-        <input
-          id="notes"
-          type="text"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Facultatif — lieu, préparation, participants…"
-          className={inputClass}
-        />
+      <div className="mt-5 flex justify-end gap-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-50"
+        >
+          Annuler
+        </button>
+        <button
+          type="submit"
+          disabled={!canSubmit}
+          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
+        >
+          {isEditing ? <Check size={16} /> : <Plus size={16} />}
+          {isEditing ? "Enregistrer" : "Ajouter"}
+        </button>
       </div>
     </form>
   );

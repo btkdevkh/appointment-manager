@@ -12,11 +12,11 @@ Signed-out visitors land here. Google is the only way in.
 
 ![The landing page, with a "Se connecter avec Google" button](public/screenshot-app-login.png)
 
-Once signed in, a first-time account starts empty.
+Once signed in, a first-time account starts empty. Adding one opens a dialog from the **Ajouter** button: a title, a date, a time, and optional notes.
 
-![The signed-in app with no appointments yet](public/screenshot-app-account.png)
+![The new-appointment dialog, open over an empty appointment list](public/screenshot-app-account.png)
 
-Adding one: a title, a date, a time, and optional notes. Each appointment can be completed, edited, or deleted, and the tabs filter by status.
+Each appointment can be completed, edited, or deleted, and the tabs filter by status. The header and toolbar stay put while the list scrolls.
 
 ![The app showing an upcoming appointment in the list](public/screenshot-app-crud.png)
 

@@ -132,15 +132,16 @@ the `UserMenu`:
   full-date fallback is unreachable, but the helper doesn't know its caller's
   window.
 
+Verified in a browser after merge: the badge counts and the dropdown lists the
+right appointments.
+
 ## Next step
 
 No major piece outstanding. Worth considering:
 
-- **The bell has never been seen in a browser.** It's covered by
-  `test/NotificationBell.test.tsx` and every branch of `getReminders` is
-  mutation-checked, but the dropdown's real placement — `w-72`, right-aligned,
-  next to the user menu — is unverified on a narrow viewport, where it may
-  overflow the header.
+- The bell's dropdown (`w-72`, right-aligned) has only been seen at desktop
+  width. On a narrow viewport it may overflow the header — the same class of
+  gap as the pickers below.
 - The pickers in `components/ui/` have never been click-tested in a browser.
   The date picker's popup now opens inside the form dialog, which is untested
   on short viewports — it may extend past the panel.

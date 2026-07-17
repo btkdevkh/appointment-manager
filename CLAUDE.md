@@ -42,6 +42,7 @@ Covered so far:
 - `test/useClickOutside.test.ts`, `test/useNow.test.ts` — the shared hooks (jsdom).
 - `test/Modal.test.tsx` — the shared dialog primitive: what it renders when open vs. closed, Escape and overlay dismissal, and its `aria-labelledby` wiring (jsdom).
 - `test/AppointmentManager.test.tsx` — the appointment form dialog: that the form stays off the page until asked for, opens blank from the toolbar and prefilled from an item's edit button, and closes on cancel/Escape/save. The server actions are mocked (jsdom).
+- `test/NotificationBell.test.tsx` — the 24h reminder popup: the badge count, that the list stays closed until clicked, its day/time labels, and dismissal by click-outside (jsdom). The reminder rule itself is `getReminders`, covered in `test/appointments.test.ts`.
 
 The pickers in `components/ui/` are still only exercised through the code that renders them, never click-tested directly.
 

@@ -7,7 +7,7 @@ import type {
   FilterTab,
   SortOrder,
 } from "@/types/appointment";
-import {countByStatus, filterAndSort} from "@/lib/appointments";
+import {countByStatus, filterAndSort, getReminders} from "@/lib/appointments";
 import {useNow} from "@/hooks/useNow";
 import {
   createAppointment,
@@ -19,6 +19,7 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import Modal from "@/components/ui/Modal";
 import AppointmentForm from "./AppointmentForm";
 import AppointmentList from "./AppointmentList";
+import NotificationBell from "./NotificationBell";
 
 type Props = {
   initialAppointments: Appointment[];
@@ -50,6 +51,13 @@ const AppointmentManager = ({
   const visible = useMemo(
     () => filterAndSort(appointments, tab, order, now),
     [appointments, tab, order, now]
+  );
+
+  // Recomputed on each tick of `now`, so an appointment joins the bell as it
+  // comes within 24h and leaves it as its time passes — no separate timer.
+  const reminders = useMemo(
+    () => getReminders(appointments, now),
+    [appointments, now]
   );
 
   const editing = editingId
@@ -193,7 +201,10 @@ const AppointmentManager = ({
               )}
             </p>
           </div>
-          {userMenu}
+          <div className="flex shrink-0 items-center gap-2.5">
+            <NotificationBell reminders={reminders} now={now} />
+            {userMenu}
+          </div>
         </header>
 
         <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3">

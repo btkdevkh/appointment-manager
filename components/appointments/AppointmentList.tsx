@@ -13,13 +13,13 @@ type Props = {
   onDelete: (id: string) => void;
 };
 
-export default function AppointmentList({
+const AppointmentList = ({
   appointments,
   now,
   onToggleComplete,
   onEdit,
   onDelete,
-}: Props) {
+}: Props) => {
   if (appointments.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-neutral-200 py-16 text-center">
@@ -47,4 +47,6 @@ export default function AppointmentList({
       ))}
     </ul>
   );
-}
+};
+
+export default AppointmentList;

@@ -19,14 +19,14 @@ const badge: Record<AppointmentStatus, {label: string; className: string}> = {
   completed: {label: "Terminé", className: "bg-neutral-100 text-neutral-500"},
 };
 
-export default function AppointmentItem({
+const AppointmentItem = ({
   appointment,
   status,
   now,
   onToggleComplete,
   onEdit,
   onDelete,
-}: Props) {
+}: Props) => {
   const {label, className} = badge[status];
   const isDone = status === "completed";
   const isTodayUpcoming =
@@ -93,4 +93,6 @@ export default function AppointmentItem({
       </div>
     </li>
   );
-}
+};
+
+export default AppointmentItem;

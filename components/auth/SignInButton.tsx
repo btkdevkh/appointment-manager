@@ -1,7 +1,7 @@
 import {signIn} from "@/lib/auth";
 
 // A form posting to a server action, so signing in works without client JS.
-export default function SignInButton() {
+const SignInButton = () => {
   return (
     <form
       action={async () => {
@@ -18,10 +18,10 @@ export default function SignInButton() {
       </button>
     </form>
   );
-}
+};
 
 // lucide-react ships no brand marks, so the Google "G" is inlined.
-function GoogleLogo() {
+const GoogleLogo = () => {
   return (
     <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
       <path
@@ -42,4 +42,6 @@ function GoogleLogo() {
       />
     </svg>
   );
-}
+};
+
+export default SignInButton;

@@ -18,11 +18,11 @@ export const metadata: Metadata = {
     "Planifiez, suivez et gérez tous vos rendez-vous au même endroit.",
 };
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) => {
   return (
     <html
       lang="fr"
@@ -31,4 +31,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
-}
+};
+
+export default RootLayout;

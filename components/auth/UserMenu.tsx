@@ -7,7 +7,7 @@ type Props = {
 };
 
 // Rendered into the manager's header once signed in.
-export default function UserMenu({name, image}: Props) {
+const UserMenu = ({name, image}: Props) => {
   return (
     <div className="flex items-center gap-2.5">
       {image && (
@@ -42,4 +42,6 @@ export default function UserMenu({name, image}: Props) {
       </form>
     </div>
   );
-}
+};
+
+export default UserMenu;

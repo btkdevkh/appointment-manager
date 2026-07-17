@@ -12,7 +12,7 @@ type Props = {
   onCancel: () => void;
 };
 
-export default function ConfirmDialog({
+const ConfirmDialog = ({
   open,
   title,
   message,
@@ -20,12 +20,12 @@ export default function ConfirmDialog({
   cancelLabel = "Annuler",
   onConfirm,
   onCancel,
-}: Props) {
+}: Props) => {
   useEffect(() => {
     if (!open) return;
-    function onKey(event: KeyboardEvent) {
+    const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onCancel();
-    }
+    };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onCancel]);
@@ -65,4 +65,6 @@ export default function ConfirmDialog({
       </div>
     </div>
   );
-}
+};
+
+export default ConfirmDialog;

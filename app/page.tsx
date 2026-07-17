@@ -8,7 +8,7 @@ import { listAppointments } from "@/lib/actions";
 // dynamically.
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+const Home = async () => {
   const session = await auth();
 
   // Signed-out visitors get the landing page; listAppointments would throw.
@@ -22,4 +22,6 @@ export default async function Home() {
       userMenu={<UserMenu name={session.user.name} image={session.user.image} />}
     />
   );
-}
+};
+
+export default Home;

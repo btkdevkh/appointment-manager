@@ -12,11 +12,11 @@ import {useEffect, useRef, type RefObject} from "react";
  * should dismiss even if the release lands elsewhere, and it fires before the
  * trigger's own click handler, so the toggle isn't reopened by its own press.
  */
-export function useClickOutside(
+export const useClickOutside = (
   ref: RefObject<HTMLElement | null>,
   onOutside: () => void,
   active = true
-) {
+) => {
   // Callers pass an inline arrow, so its identity changes every render. Reading
   // it from a ref keeps the listener subscribed once per open instead of
   // re-binding on each render — without making every caller wrap it.
@@ -28,12 +28,12 @@ export function useClickOutside(
   useEffect(() => {
     if (!active) return;
 
-    function handle(event: MouseEvent) {
+    const handle = (event: MouseEvent) => {
       const element = ref.current;
       if (element && !element.contains(event.target as Node)) callback.current();
-    }
+    };
 
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
   }, [ref, active]);
-}
+};

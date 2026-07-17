@@ -86,6 +86,14 @@ out, and the manager renders signed in with the avatar and sign-out control.
 - Verified from outside after deploy: landing page 200, `/api/auth/providers`
   reports the production callback (so Auth.js infers `trustHost` on Vercel —
   don't set `AUTH_TRUST_HOST` there), `/api/auth/session` returns `200 null`.
+- **Preview deployments can sign in**, via `AUTH_REDIRECT_PROXY_URL` — see
+  `.env.example` for the mechanism and why both scopes need it. A preview sends
+  Google the production callback (the only one registered) and production
+  forwards the result back. Verified in a browser on PR #12's preview: sign-in
+  completes and the preview shows `development` data — which also confirms the
+  Preview database scoping above, since production data would have meant the
+  URLs were shared. Note previews also sit behind Vercel SSO, so they can only
+  be driven from a browser logged into Vercel, never from a terminal.
 
 **The appointment form lives in a dialog** rather than sitting permanently at
 the top of the page — a deliberate departure from
@@ -111,7 +119,4 @@ No major piece outstanding. Worth considering:
 - The pickers in `components/ui/` have never been click-tested in a browser.
   The date picker's popup now opens inside the form dialog, which is untested
   on short viewports — it may extend past the panel.
-- Preview deployments build green again, but still can't sign in — each gets a
-  unique URL that isn't registered with Google, so a preview only ever shows
-  the landing page. Fixable with `AUTH_REDIRECT_PROXY_URL` if it matters.
 - `next-auth@5` is a beta pin; revisit when it goes stable.

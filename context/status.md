@@ -96,8 +96,9 @@ out, and the manager renders signed in with the avatar and sign-out control.
   be driven from a browser logged into Vercel, never from a terminal.
 
 **The appointment form lives in a dialog** rather than sitting permanently at
-the top of the page — a deliberate departure from
-`context/screenshots/app-ui-prototype.png`, which still shows the inline form:
+the top of the page. `context/screenshots/app-ui-prototype.png` was re-taken
+from the running app and shows the dialog, so it no longer describes the
+original inline-form design it was named for:
 
 - `components/ui/Modal.tsx` is the shared dialog primitive — overlay, Escape,
   and the `aria-labelledby` heading. `ConfirmDialog` is now a thin wrapper over

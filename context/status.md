@@ -113,6 +113,12 @@ original inline-form design it was named for:
 - Component rendering is now tested (`test/Modal.test.tsx`,
   `test/AppointmentManager.test.tsx`) — no new dependencies were needed.
 
+The date and time pickers have been click-tested by hand on a phone, inside the
+dialog: both open and select correctly, and the date popup stays within the
+panel. That closes the long-standing worry that it would overflow on a short
+viewport. It remains a *manual* result — jsdom has no layout engine, so no
+automated test covers picker layout, and none can.
+
 **A notification bell reminds the user of appointments within 24 hours**
 (`components/appointments/NotificationBell.tsx`), sitting in the header beside
 the `UserMenu`:
@@ -142,9 +148,8 @@ dropdown lists the right appointments, and it no longer clips at either edge.
 
 ## Next step
 
-No major piece outstanding. Worth considering:
+Nothing outstanding. Every piece of the app has now been exercised in a browser,
+at desktop width and on a phone.
 
-- The pickers in `components/ui/` have never been click-tested in a browser.
-  The date picker's popup now opens inside the form dialog, which is untested
-  on short viewports — it may extend past the panel.
-- `next-auth@5` is a beta pin; revisit when it goes stable.
+- `next-auth@5` is a beta pin; revisit when it goes stable. Nothing to do until
+  then.

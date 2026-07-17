@@ -131,17 +131,19 @@ the `UserMenu`:
 - `formatRelativeDay` renders "Aujourd'hui" / "Demain"; inside a 24h window the
   full-date fallback is unreachable, but the helper doesn't know its caller's
   window.
+- Below `sm` the dropdown gives up the bell anchor: it pins to the viewport
+  with equal `1rem` margins and shrinks to fit. `right-0` alone ran its left
+  edge off a phone screen, because the bell has the `UserMenu` to its right and
+  so isn't at the viewport edge — and centring an 18rem panel *on the bell*
+  would only have moved the overflow to the other side.
 
-Verified in a browser after merge: the badge counts and the dropdown lists the
-right appointments.
+Verified in a browser at desktop width and on a phone: the badge counts, the
+dropdown lists the right appointments, and it no longer clips at either edge.
 
 ## Next step
 
 No major piece outstanding. Worth considering:
 
-- The bell's dropdown (`w-72`, right-aligned) has only been seen at desktop
-  width. On a narrow viewport it may overflow the header — the same class of
-  gap as the pickers below.
 - The pickers in `components/ui/` have never been click-tested in a browser.
   The date picker's popup now opens inside the form dialog, which is untested
   on short viewports — it may extend past the panel.

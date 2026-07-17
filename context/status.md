@@ -113,10 +113,34 @@ original inline-form design it was named for:
 - Component rendering is now tested (`test/Modal.test.tsx`,
   `test/AppointmentManager.test.tsx`) — no new dependencies were needed.
 
+**A notification bell reminds the user of appointments within 24 hours**
+(`components/appointments/NotificationBell.tsx`), sitting in the header beside
+the `UserMenu`:
+
+- `getReminders(appointments, now)` in `lib/appointments.ts` is the whole rule:
+  not completed, `startsAt` between now and now + 24h, soonest first. Overdue is
+  deliberately excluded — the bell answers "what's coming up", while the header
+  line and the "En retard" tab already speak for the past.
+- **Nothing is stored and nothing is dismissible.** The badge is derived from
+  state the manager already holds, recomputed on each `useNow` tick, so an
+  appointment joins the bell as it comes within 24h and leaves as its time
+  passes. No schema change, no new server action, no timer of its own.
+- The popup follows the existing `DatePicker` pattern (`useClickOutside` +
+  conditional render, no Escape handler) rather than the `Modal` primitive —
+  it's a popover, not a dialog.
+- `formatRelativeDay` renders "Aujourd'hui" / "Demain"; inside a 24h window the
+  full-date fallback is unreachable, but the helper doesn't know its caller's
+  window.
+
 ## Next step
 
 No major piece outstanding. Worth considering:
 
+- **The bell has never been seen in a browser.** It's covered by
+  `test/NotificationBell.test.tsx` and every branch of `getReminders` is
+  mutation-checked, but the dropdown's real placement — `w-72`, right-aligned,
+  next to the user menu — is unverified on a narrow viewport, where it may
+  overflow the header.
 - The pickers in `components/ui/` have never been click-tested in a browser.
   The date picker's popup now opens inside the form dialog, which is untested
   on short viewports — it may extend past the panel.

@@ -25,7 +25,7 @@ body {
   --rdp-accent-color: #171717 !important;
   --rdp-accent-background-color: #f5f5f5 !important;
   --rdp-today-color: #059669 !important;
-  --rdp-selected-border: 2px solid #a3a3a3 !important; /* soft gray circle, not black */
+  --rdp-selected-border: 1px solid #a3a3a3 !important; /* soft, thin gray circle — not bold */
   --rdp-day-width: 32px !important;
   --rdp-day-height: 32px !important;
   --rdp-day_button-width: 30px !important;
@@ -39,6 +39,13 @@ body {
 
 /* Today: keep the emerald tint but the same size/weight as every other day. */
 .rdp-today:not(.rdp-outside) {
+  font-weight: 400 !important;
+  font-size: inherit !important;
+}
+
+/* Selected day (e.g. the current value when editing): keep the gray circle but
+   the same size/weight as every other day — the default makes it bold + large. */
+.rdp-selected {
   font-weight: 400 !important;
   font-size: inherit !important;
 }

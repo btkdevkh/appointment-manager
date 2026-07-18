@@ -27,7 +27,7 @@ npx vitest run test/appointments.test.ts   # a single test file
 **A feature isn't done until it has tests, and a red test must never build.** Two gates enforce the second half:
 
 - `npm run build` is `vitest run && next build`, so a failing test stops the build before `next build` runs — locally and on Vercel, where a failed build means no deploy.
-- `.github/workflows/ci.yml` runs lint, typecheck, tests and build on every PR to `main`. This is the gate that can block a merge — it needs branch protection on `main` requiring the `check` job to pass. CI needs no real secrets: tests mock the database and session, and the only page is `force-dynamic`, so placeholder env vars suffice.
+- `.github/workflows/ci.yml` runs lint, typecheck, tests and build on every PR to `develop` and `main`. This is the gate that can block a merge — it needs branch protection on both `develop` and `main` requiring the `check` job to pass. CI needs no real secrets: tests mock the database and session, and the only page is `force-dynamic`, so placeholder env vars suffice.
 
 The first half — that each feature *has* tests — no tool can enforce; a passing test may assert nothing. It's on whoever writes and reviews the change. When you add a test, confirm it can fail: break the code it covers on purpose and watch it go red. Green on its own proves nothing.
 
@@ -48,12 +48,23 @@ The pickers in `components/ui/` are still only exercised through the code that r
 
 ## Git workflow
 
-- **One feature, one branch.** Never commit a new feature directly to `main`.
-  Before starting a feature, create a branch off up-to-date `main`:
-  `git switch main && git pull && git switch -c <branch>`.
+This project follows a **Git Flow**-style two-trunk model:
+
+- **`main`** — production/stable. Only ever receives merges from `develop`, never
+  feature branches directly.
+- **`develop`** — the integration branch. Every finished feature lands here first.
+
+The flow:
+
+- **One feature, one branch.** Never commit a new feature directly to `develop`
+  or `main`. Before starting a feature, create a branch off up-to-date `develop`:
+  `git switch develop && git pull && git switch -c <branch>`.
 - Branch names are kebab-case and prefixed by intent: `feat/…`, `fix/…`,
   `chore/…`, `refactor/…` (e.g. `feat/prisma-data-layer`).
-- Merge back into `main` via pull request, not by pushing to `main` directly.
+- **Feature PRs target `develop`**, not `main` — merge via pull request, not by
+  pushing directly.
+- **Releasing to `main`:** when `develop` is verified and stable, open a single PR
+  from `develop` into `main`. Don't push to `main` directly.
 - A PR merges green, with tests for what it changed. See **Testing** above.
 - Commit/push only when asked (see the harness git rules).
 

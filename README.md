@@ -12,13 +12,17 @@ Signed-out visitors land here. Google is the only way in.
 
 ![The landing page, with a "Se connecter avec Google" button](public/screenshot-app-login.png)
 
-Once signed in, a first-time account starts empty. Adding one opens a dialog from the **Ajouter** button: a title, a date, a time, and optional notes.
+Once signed in, appointments can be completed, edited, or deleted, and the tabs filter by status. Overdue and completed items are styled apart from what's still to come.
 
-![The new-appointment dialog, open over an empty appointment list](public/screenshot-app-account.png)
+![The appointment list, with upcoming, overdue and completed items and the status filter tabs](public/screenshot-app-list.png)
 
-Each appointment can be completed, edited, or deleted, and the tabs filter by status. The header and toolbar stay put while the list scrolls.
+Adding one opens a dialog from the **Ajouter** button: a title, a date, a time, and optional notes.
 
-![The app showing an upcoming appointment in the list](public/screenshot-app-crud.png)
+![The new-appointment dialog, open over the appointment list](public/screenshot-app-dialog.png)
+
+The bell counts anything starting within the next 24 hours and lists it on click, labelled *Aujourd'hui* or *Demain*.
+
+![The notification dropdown listing two appointments due within 24 hours](public/screenshot-app-bell.png)
 
 ## What it does
 

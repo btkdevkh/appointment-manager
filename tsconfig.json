@@ -6,6 +6,10 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    // `test/listUsers.test.ts` imports `scripts/list-users.mts` by its real
+    // filename. The script is run directly by Node (`npm run users:list`), which
+    // needs the extension; safe here because nothing is emitted from this config.
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",

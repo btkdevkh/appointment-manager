@@ -6,7 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Rendez-vous** (Appointment Manager) — a French-language web app for CRUD management of appointments. User-facing strings are in French; `<html lang="fr">`. See `context/project-overview.md` for intent and `context/screenshots/` for the target UI.
 
-**Current progress and the next step live in [`context/status.md`](context/status.md) — read it first.** In short: the CRUD UI, the Prisma + Neon data layer and Google auth are all in place; appointments persist and are scoped to the signed-in user.
+**Current work and the next step live in [`context/current-feature.md`](context/current-feature.md) — read it first.** It holds only what's in progress, plus an index of [`context/features/`](context/features/), where each landed feature has its own write-up. In short: the CRUD UI, the Prisma + Neon data layer and Google auth are all in place; appointments persist and are scoped to the signed-in user.
+
+When a feature lands, move its notes out of `current-feature.md` into a new `context/features/<feature>.md` and add it to that index — `current-feature.md` shouldn't accumulate history.
 
 ## Commands
 

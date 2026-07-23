@@ -37,16 +37,7 @@ Tests use **Vitest** and live in **`test/`**, not beside the code they cover. Th
 
 Vitest runs without `globals`, so Testing Library can't register its own auto-cleanup — a component test file must call `afterEach(cleanup)` itself or the DOM leaks between cases.
 
-Covered so far:
-
-- `test/appointments.test.ts` — the pure logic in `lib/` (status/filter/sort). Pass an explicit `now` to the status helpers so results don't depend on the wall clock.
-- `test/actions.test.ts` — that every server action rejects an unauthenticated caller and scopes its query to the session user. Session and Prisma are mocked; no database. **Any new action needs a case here** — this is the only automated check on that boundary.
-- `test/useClickOutside.test.ts`, `test/useNow.test.ts` — the shared hooks (jsdom).
-- `test/Modal.test.tsx` — the shared dialog primitive: what it renders when open vs. closed, Escape and overlay dismissal, and its `aria-labelledby` wiring (jsdom).
-- `test/AppointmentManager.test.tsx` — the appointment form dialog: that the form stays off the page until asked for, opens blank from the toolbar and prefilled from an item's edit button, and closes on cancel/Escape/save. The server actions are mocked (jsdom).
-- `test/NotificationBell.test.tsx` — the 24h reminder popup: the badge count, that the list stays closed until clicked, its day/time labels, and dismissal by click-outside (jsdom). The reminder rule itself is `getReminders`, covered in `test/appointments.test.ts`.
-
-The pickers in `components/ui/` are still only exercised through the code that renders them, never click-tested directly.
+What the suite covers today — file by file, plus the known gaps — lives in [`context/testing.md`](context/testing.md). Keep it current: when you add or retire a test file, update that inventory rather than this section. One entry there is load-bearing — `test/actions.test.ts` is the only automated check that every server action rejects an unauthenticated caller, so **any new action needs a case in it**.
 
 ## Git workflow
 
@@ -68,6 +59,8 @@ The flow:
 - **Releasing to `main`:** when `develop` is verified and stable, open a single PR
   from `develop` into `main`. Don't push to `main` directly.
 - A PR merges green, with tests for what it changed. See **Testing** above.
+- The `/feature-complete` skill runs this whole landing sequence — test gates,
+  the `context/` write-up shuffle, then branch → PR → merge.
 - Commit/push only when asked (see the harness git rules).
 
 ## Stack & conventions
